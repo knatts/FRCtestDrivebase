@@ -73,7 +73,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
     SwerveParser.parse(new File(Filesystem.getDeployDirectory(), "swerve"));
     SwerveDriveDevices<SwerveDrive> devices = SwerveParser.createSwerveDriveDevices(cfg);
     drive = devices.swerveDrive();
-    gyro = (Canandgyro) devices.gyro();
+    gyro = (pigeon2_can) devices.gyro();
     // You can also create the SwerveDrive without the ability to retrieve the devices like this.
     // drive = SwerveParser.createSwerveDrive(cfg);
 
