@@ -14,7 +14,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
-import com.reduxrobotics.canandgyro.Canandgyro;
+//import com.reduxrobotics.canandgyro.Canandgyro;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.DoubleSupplier;
@@ -55,8 +55,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
       DegreesPerSecond.of(540), DegreesPerSecondPerSecond.of(720));
 
   private SwerveDrive                   drive;
-  private Canandgyro                    gyro;
-
 
   public SwerveDriveSubsystem()
   {
@@ -73,7 +71,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
     SwerveParser.parse(new File(Filesystem.getDeployDirectory(), "swerve"));
     SwerveDriveDevices<SwerveDrive> devices = SwerveParser.createSwerveDriveDevices(cfg);
     drive = devices.swerveDrive();
-    gyro = (Canandgyro) devices.gyro();
     // You can also create the SwerveDrive without the ability to retrieve the devices like this.
     // drive = SwerveParser.createSwerveDrive(cfg);
 
@@ -173,12 +170,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
    */
   public Rotation3d getGyroRotation3d()
   {
-    if (RobotBase.isSimulation())
-    {
-      // Only required if you cant simulate the gyro's orientation.'
-      return new Rotation3d(0, 0, drive.getSimPose().getRotation().getRadians());
-    }
-    return gyro.getRotation3d();
+    return drive.getGyroRotation3d();
   }
 
   // getGyroAngularVelocity() returned YALL's AngularVelocity3d for the Limelight subsystem (see disabled-vision/). YALL has no 2027_alpha7
@@ -316,12 +308,20 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
   public SwerveDrivePoseEstimator createPoseEstimator()
   {
-    return new SwerveDrivePoseEstimator(drive.getKinematics(), gyro.getRotation2d(), drive.getModulePositions(), drive.getConfig().getInitialPose());
+    return new SwerveDrivePoseEstimator(
+      drive.getKinematics(), 
+      drive.getGyroRotation3d().toRotation2d(), 
+      drive.getModulePositions(), 
+      drive.getConfig().getInitialPose()
+    );
   }
 
   public void updatePoseEstimator(SwerveDrivePoseEstimator visionPoseEstimator)
   {
-    visionPoseEstimator.update(gyro.getRotation2d(), drive.getModulePositions());
+    visionPoseEstimator.update(
+      drive.getGyroRotation3d().toRotation2d(), 
+      drive.getModulePositions()
+    );
   }
 }
 
